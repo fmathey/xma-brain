@@ -165,22 +165,29 @@ int main()
 
         for(auto i(0u); i < 100; i++) {
 
-            MLP::Network net({ 2, 4, 1 });
+            MLP::Network net({ 2, 5, 1 });
 
             MLP::training_t training;
 
-            training.learningRate = .6f;
+            training.learningRate = 6.f;
             training.treshold = 0.001f;
 
             training.patterns.push_back({ { 0,0 }, { 0 } });
+            training.patterns.push_back({ { 1,1 }, { 0 } });
             training.patterns.push_back({ { 1,0 }, { 1 } });
             training.patterns.push_back({ { 0,1 }, { 1 } });
-            training.patterns.push_back({ { 1,1 }, { 0 } });
 
             MLP::progress_t res = net.train(training);
 
             for(auto& pattern : training.patterns) {
-                XMA_ASSERT_EQUAL(net.output(pattern.inputs, Transfers::boolean), pattern.targets);
+
+                float_vector_t prediction = net.output(pattern.inputs, Transfers::logistic);
+
+                if(pattern.targets[0] == 1) {
+                    XMA_ASSERT_HIGHER(prediction[0], 0.9f);
+                } else {
+                    XMA_ASSERT_LOWER(prediction[0], 0.1f);
+                }
             }
 
         }
